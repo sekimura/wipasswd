@@ -15,7 +15,7 @@ let kSecMatchLimitOneValue = kSecMatchLimitOne as NSString
 let kAirPortService = "AirPort"
 
 
-func getPasswd(userAccount : String) -> String? { 
+func getPasswd(userAccount : String) -> String? {
     var keychainQuery: NSMutableDictionary = NSMutableDictionary(
         objects: [kSecClassGenericPasswordValue, kAirPortService, userAccount, kCFBooleanTrue, kSecMatchLimitOneValue],
         forKeys: [kSecClassValue, kSecAttrServiceValue, kSecAttrAccountValue, kSecReturnDataValue, kSecMatchLimitValue])
