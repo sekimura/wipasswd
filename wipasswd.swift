@@ -1,3 +1,6 @@
+#!/usr/bin/env xcrun swift
+// vi: ft=swift
+
 import Security
 import Foundation
 
@@ -14,26 +17,21 @@ let kAirPortService = "AirPort"
 
 
 func get_passwd(userAccount : String) -> String? { 
-    var result: AnyObject?
-
     var keychainQuery: NSMutableDictionary = NSMutableDictionary(
         objects: [kSecClassGenericPasswordValue, kAirPortService, userAccount, kCFBooleanTrue, kSecMatchLimitOneValue],
         forKeys: [kSecClassValue, kSecAttrServiceValue, kSecAttrAccountValue, kSecReturnDataValue, kSecMatchLimitValue])
 
-
-    var dataTypeRef :Unmanaged<AnyObject>?
+    var dataTypeRef: Unmanaged<AnyObject>?
 
     let status: OSStatus = SecItemCopyMatching(keychainQuery, &dataTypeRef)
 
-    var contentsOfKeychain: NSString?
-    let opaque = dataTypeRef?.toOpaque()
 
+    let opaque = dataTypeRef?.toOpaque()
     if let op = opaque? {
         let retrievedData = Unmanaged<NSData>.fromOpaque(op).takeUnretainedValue()
 
         // Convert the data retrieved from the keychain into a string
-        contentsOfKeychain = NSString(data: retrievedData, encoding: NSUTF8StringEncoding)
-        return contentsOfKeychain
+        return NSString(data: retrievedData, encoding: NSUTF8StringEncoding) as NSString?
     } else {
         return nil
     }
@@ -56,7 +54,8 @@ func main() {
     let ssid = args[1]
     let contentsOfKeychain = get_passwd(ssid)
     if let passwd = contentsOfKeychain? {
-        println(passwd)
+        println("SSID: \(ssid)")
+        println("PASS: \(passwd)")
     } else {
         println("No WiFi password found for \(ssid)")
     }
