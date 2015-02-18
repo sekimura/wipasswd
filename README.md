@@ -21,7 +21,7 @@ PASS: Tr0ub4dor&3
 
 And you'll see a prompt to use "System" keychain. Enter your Username and Password.
 
-![prompt.png](https://github.com/sekimura/wipasswd/raw/master/propmpt.png)
+![prompt.png](https://raw.githubusercontent.com/sekimura/wipasswd/master/prompt.png)
 
 
 ## Install
