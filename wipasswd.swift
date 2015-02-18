@@ -3,6 +3,7 @@
 
 import Security
 import Foundation
+import SystemConfiguration.CaptiveNetwork
 
 // Arguments for the keychain queries
 let kSecClassValue = kSecClass as NSString
@@ -14,6 +15,26 @@ let kSecReturnDataValue = kSecReturnData as NSString
 let kSecMatchLimitOneValue = kSecMatchLimitOne as NSString
 let kAirPortService = "AirPort"
 
+func getCurrentSsid() -> String? {
+    // TODO(sekimura): fixme
+    let task = NSTask()
+    task.launchPath = "/bin/sh"
+    task.arguments = [
+        "-c",
+        "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport -I| grep ' SSID:'| sed -e 's/^ *SSID: //'"]
+
+    let pipe = NSPipe()
+    task.standardOutput = pipe
+    task.launch()
+
+    let data = pipe.fileHandleForReading.readDataToEndOfFile()
+    let str = NSString(data:data, encoding:NSUTF8StringEncoding)
+    if let s = str? {
+        return s.stringByReplacingOccurrencesOfString("\n", withString:"")
+    } else {
+        return nil
+    }
+}
 
 func getPasswd(userAccount : String) -> String? {
     var keychainQuery: NSMutableDictionary = NSMutableDictionary(
@@ -36,24 +57,22 @@ func getPasswd(userAccount : String) -> String? {
 func main() {
     let args = [String](Process.arguments)
 
-    if args.count < 2 {
-        println("\n".join([
-            "",
-            "Usage:",
-            "    \(args[0]) 2WIRE199",
-            "    \(args[0]) NETGEAR99",
-            "",
-            ]))
-        return
+
+    var ssid: String?
+    if args.count > 1 {
+        ssid = args[1]
+    } else {
+        ssid = getCurrentSsid()
     }
 
-    let ssid = args[1]
-    let contentsOfKeychain = getPasswd(ssid)
-    if let pass = contentsOfKeychain? {
-        println("SSID: \(ssid)")
-        println("PASS: \(pass)")
-    } else {
-        println("No WiFi password found for \(ssid)")
+    if let s = ssid? {
+        let contentsOfKeychain = getPasswd(s)
+        if let pass = contentsOfKeychain? {
+            println("SSID: \(s)")
+            println("PASS: \(pass)")
+        } else {
+            println("No WiFi password found for \(s)")
+        }
     }
 }
 
