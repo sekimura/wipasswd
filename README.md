@@ -5,10 +5,23 @@
 ## Usage
 
 ```
+$ wipasswd
+SSID: NETGEAR99
+PASS: Tr0ub4dor&3
+```
+It does use current SSID with no arguments.
+
+You can specify SSID as an agument too.
+
+```
 $ wipasswd NETGEAR99
+SSID: NETGEAR99
+PASS: Tr0ub4dor&3
 ```
 
 And you'll see a prompt to use "System" keychain. Enter your Username and Password.
+
+![prompt.png](https://github.com/sekimura/wipasswd/raw/master/propmpt.png)
 
 
 ## Install
