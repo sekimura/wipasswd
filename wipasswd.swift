@@ -41,7 +41,6 @@ func getPasswd(userAccount : String) -> String? {
 func main() {
     let args = [String](Process.arguments)
 
-
     var ssid: String?
     if args.count > 1 {
         ssid = args[1]
@@ -57,6 +56,8 @@ func main() {
         } else {
             println("No WiFi password found for \(s)")
         }
+    } else {
+        println("No wireless interface detected")
     }
 }
 
