@@ -3,7 +3,7 @@
 
 import Security
 import Foundation
-import SystemConfiguration.CaptiveNetwork
+import CoreWLAN
 
 // Arguments for the keychain queries
 let kSecClassValue = kSecClass as NSString
@@ -16,24 +16,8 @@ let kSecMatchLimitOneValue = kSecMatchLimitOne as NSString
 let kAirPortService = "AirPort"
 
 func getCurrentSsid() -> String? {
-    // TODO(sekimura): fixme
-    let task = NSTask()
-    task.launchPath = "/bin/sh"
-    task.arguments = [
-        "-c",
-        "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport -I| grep ' SSID:'| sed -e 's/^ *SSID: //'"]
-
-    let pipe = NSPipe()
-    task.standardOutput = pipe
-    task.launch()
-
-    let data = pipe.fileHandleForReading.readDataToEndOfFile()
-    let str = NSString(data:data, encoding:NSUTF8StringEncoding)
-    if let s = str? {
-        return s.stringByReplacingOccurrencesOfString("\n", withString:"")
-    } else {
-        return nil
-    }
+    // By passing 'nil' as an interface, you get the currently connected wifi.
+    return CWInterface(interfaceName: nil).ssid()
 }
 
 func getPasswd(userAccount : String) -> String? {
