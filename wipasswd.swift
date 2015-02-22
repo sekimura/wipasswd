@@ -57,11 +57,14 @@ func main() {
         if let pass = contentsOfKeychain {
             println("SSID: \(s)")
             println("PASS: \(pass)")
+            exit(1)
         } else {
             println("No WiFi password found for \(s)")
+            exit(0)
         }
     } else {
         println("No wireless interface detected")
+        exit(0)
     }
 }
 
