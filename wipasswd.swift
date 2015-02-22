@@ -30,9 +30,13 @@ func getPasswd(userAccount : String) -> String? {
     let status: OSStatus = SecItemCopyMatching(keychainQuery, &dataTypeRef)
 
     let opaque = dataTypeRef?.toOpaque()
-    if let op = opaque? {
+    if let op = opaque {
         let retrievedData = Unmanaged<NSData>.fromOpaque(op).takeUnretainedValue()
-        return NSString(data:retrievedData, encoding:NSUTF8StringEncoding) as NSString?
+        if let string = NSString(data:retrievedData, encoding:NSUTF8StringEncoding) {
+            return string as String
+        } else {
+            return nil
+        }
     } else {
         return nil
     }
@@ -48,9 +52,9 @@ func main() {
         ssid = getCurrentSsid()
     }
 
-    if let s = ssid? {
+    if let s = ssid {
         let contentsOfKeychain = getPasswd(s)
-        if let pass = contentsOfKeychain? {
+        if let pass = contentsOfKeychain {
             println("SSID: \(s)")
             println("PASS: \(pass)")
         } else {
