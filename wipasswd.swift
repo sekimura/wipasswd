@@ -16,8 +16,7 @@ let kSecMatchLimitOneValue = kSecMatchLimitOne as NSString
 let kAirPortService = "AirPort"
 
 func getCurrentSsid() -> String? {
-    // By passing 'nil' as an interface, you get the currently connected wifi.
-    return CWInterface(interfaceName: nil).ssid()
+    return CWWiFiClient.sharedWiFiClient().interface().ssid()
 }
 
 func getPasswd(userAccount : String) -> String? {
