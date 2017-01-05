@@ -16,12 +16,13 @@ let kSecReturnDataValue = kSecReturnData as NSString
 let kSecMatchLimitOneValue = kSecMatchLimitOne as NSString
 let kAirPortService = "AirPort"
 
-@available(OSX 10.10, *)
 func getCurrentSsid() -> String? {
-    return CWWiFiClient.shared().interface()?.ssid()
+    if #available(OSX 10.10, *) {
+        return CWWiFiClient.shared().interface()?.ssid()
+    }
+    return nil
 }
 
-@available(OSX 10.10, *)
 func getPasswd(userAccount : String) -> String? {
     let keychainQuery: NSMutableDictionary = NSMutableDictionary(
         objects: [kSecClassGenericPasswordValue, kAirPortService, userAccount, kCFBooleanTrue, kSecMatchLimitOneValue],
@@ -46,25 +47,11 @@ func main() -> Int32 {
     if args.count > 1 {
         ssid = args[1]
     } else {
-        if #available(OSX 10.10, *) {
-            ssid = getCurrentSsid()
-        } else {
-            print("Wrong OS X version")
-            return 1
-        }
+        ssid = getCurrentSsid()
     }
 
-    let contentsOfKeychain: String?
-
     if let s = ssid {
-        if #available(OSX 10.10, *) {
-            contentsOfKeychain = getPasswd(userAccount: s)
-        } else {
-            print("Wrong OS X version")
-            return 1
-        }
-
-        if let pass = contentsOfKeychain {
+        if let pass = getPasswd(userAccount: s) {
             // Copy to clipboard
             let pb = NSPasteboard.general()
             pb.clearContents()
