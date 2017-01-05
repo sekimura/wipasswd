@@ -1,9 +1,10 @@
 #!/usr/bin/env xcrun swift
 // vi: ft=swift
 
-import Security
-import Foundation
+import AppKit
 import CoreWLAN
+import Foundation
+import Security
 
 // Arguments for the keychain queries
 let kSecClassValue = kSecClass as NSString
@@ -16,33 +17,40 @@ let kSecMatchLimitOneValue = kSecMatchLimitOne as NSString
 let kAirPortService = "AirPort"
 
 func getCurrentSsid() -> String? {
-    return CWWiFiClient.sharedWiFiClient().interface().ssid()
-}
-
-func getPasswd(userAccount : String) -> String? {
-    var keychainQuery: NSMutableDictionary = NSMutableDictionary(
-        objects: [kSecClassGenericPasswordValue, kAirPortService, userAccount, kCFBooleanTrue, kSecMatchLimitOneValue],
-        forKeys: [kSecClassValue, kSecAttrServiceValue, kSecAttrAccountValue, kSecReturnDataValue, kSecMatchLimitValue])
-
-    var dataTypeRef: Unmanaged<AnyObject>?
-
-    let status: OSStatus = SecItemCopyMatching(keychainQuery, &dataTypeRef)
-
-    let opaque = dataTypeRef?.toOpaque()
-    if let op = opaque {
-        let retrievedData = Unmanaged<NSData>.fromOpaque(op).takeUnretainedValue()
-        if let string = NSString(data:retrievedData, encoding:NSUTF8StringEncoding) {
-            return string as String
-        } else {
-            return nil
-        }
-    } else {
-        return nil
+    if #available(OSX 10.10, *) {
+        return CWWiFiClient.shared().interface()?.ssid()
     }
+    return nil
 }
 
-func main() {
-    let args = [String](Process.arguments)
+func getPasswd(userAccount: String) -> String? {
+    let keychainQuery: NSMutableDictionary = NSMutableDictionary(
+        objects: [kSecClassGenericPasswordValue,
+                  kAirPortService,
+                  userAccount,
+                  kCFBooleanTrue,
+                  kSecMatchLimitOneValue],
+        forKeys: [kSecClassValue,
+                  kSecAttrServiceValue,
+                  kSecAttrAccountValue,
+                  kSecReturnDataValue,
+                  kSecMatchLimitValue])
+
+    var dataTypeRef: AnyObject?
+    SecItemCopyMatching(keychainQuery, &dataTypeRef)
+
+    if let retrievedData = dataTypeRef as? NSData {
+        if let string = NSString(data:retrievedData as Data,
+                                 encoding:String.Encoding.utf8.rawValue) {
+            return string as String
+        }
+    }
+
+    return nil
+}
+
+func main() -> Int32 {
+    let args = CommandLine.arguments
 
     var ssid: String?
     if args.count > 1 {
@@ -52,19 +60,24 @@ func main() {
     }
 
     if let s = ssid {
-        let contentsOfKeychain = getPasswd(s)
-        if let pass = contentsOfKeychain {
-            println("SSID: \(s)")
-            println("PASS: \(pass)")
-            exit(1)
+        if let pass = getPasswd(userAccount: s) {
+            // Copy to clipboard
+            let pb = NSPasteboard.general()
+            pb.clearContents()
+            pb.setString(pass, forType:NSStringPboardType)
+
+            print("SSID: \(s)")
+            print("PASS: \(pass)")
+
+            return 0
         } else {
-            println("No WiFi password found for \(s)")
-            exit(0)
+            print("No WiFi password found for \(s)")
+            return 1
         }
-    } else {
-        println("No wireless interface detected")
-        exit(0)
     }
+
+    print("No wireless interface detected")
+    return 1
 }
 
-main()
+exit(main())
