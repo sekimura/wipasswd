@@ -15,54 +15,64 @@ let kSecReturnDataValue = kSecReturnData as NSString
 let kSecMatchLimitOneValue = kSecMatchLimitOne as NSString
 let kAirPortService = "AirPort"
 
+@available(OSX 10.10, *)
 func getCurrentSsid() -> String? {
-    return CWWiFiClient.sharedWiFiClient().interface().ssid()
+    return CWWiFiClient.shared().interface()?.ssid()
 }
 
+@available(OSX 10.10, *)
 func getPasswd(userAccount : String) -> String? {
-    var keychainQuery: NSMutableDictionary = NSMutableDictionary(
+    let keychainQuery: NSMutableDictionary = NSMutableDictionary(
         objects: [kSecClassGenericPasswordValue, kAirPortService, userAccount, kCFBooleanTrue, kSecMatchLimitOneValue],
         forKeys: [kSecClassValue, kSecAttrServiceValue, kSecAttrAccountValue, kSecReturnDataValue, kSecMatchLimitValue])
 
-    var dataTypeRef: Unmanaged<AnyObject>?
+    var dataTypeRef: AnyObject?
+    SecItemCopyMatching(keychainQuery, &dataTypeRef)
 
-    let status: OSStatus = SecItemCopyMatching(keychainQuery, &dataTypeRef)
-
-    let opaque = dataTypeRef?.toOpaque()
-    if let op = opaque {
-        let retrievedData = Unmanaged<NSData>.fromOpaque(op).takeUnretainedValue()
-        if let string = NSString(data:retrievedData, encoding:NSUTF8StringEncoding) {
+    if let retrievedData = dataTypeRef as? NSData {
+        if let string = NSString(data:retrievedData as Data, encoding:String.Encoding.utf8.rawValue) {
             return string as String
         } else {
             return nil
         }
-    } else {
-        return nil
     }
+
+    return nil
 }
 
 func main() {
-    let args = [String](Process.arguments)
+    let args = CommandLine.arguments
 
     var ssid: String?
     if args.count > 1 {
         ssid = args[1]
     } else {
-        ssid = getCurrentSsid()
+        if #available(OSX 10.10, *) {
+            ssid = getCurrentSsid()
+        } else {
+            exit(1)
+        }
     }
 
+    let contentsOfKeychain: String?
+
     if let s = ssid {
-        let contentsOfKeychain = getPasswd(s)
+        if #available(OSX 10.10, *) {
+            contentsOfKeychain = getPasswd(userAccount: s)
+        } else {
+            exit(1)
+        }
+
         if let pass = contentsOfKeychain {
-            println("SSID: \(s)")
-            println("PASS: \(pass)")
+            print("SSID: \(s)")
+            print("PASS: \(pass)")
             exit(1)
         } else {
-            println("No WiFi password found for \(s)")
+            print("No WiFi password found for \(s)")
             exit(0)
         }
     } else {
-        println("No wireless interface detected")
+        print("No wireless interface detected")
         exit(0)
     }
 }
