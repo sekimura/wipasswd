@@ -1,9 +1,10 @@
 #!/usr/bin/env xcrun swift
 // vi: ft=swift
 
-import Security
-import Foundation
+import AppKit
 import CoreWLAN
+import Foundation
+import Security
 
 // Arguments for the keychain queries
 let kSecClassValue = kSecClass as NSString
@@ -32,15 +33,13 @@ func getPasswd(userAccount : String) -> String? {
     if let retrievedData = dataTypeRef as? NSData {
         if let string = NSString(data:retrievedData as Data, encoding:String.Encoding.utf8.rawValue) {
             return string as String
-        } else {
-            return nil
         }
     }
 
     return nil
 }
 
-func main() {
+func main() -> Int32 {
     let args = CommandLine.arguments
 
     var ssid: String?
@@ -50,7 +49,8 @@ func main() {
         if #available(OSX 10.10, *) {
             ssid = getCurrentSsid()
         } else {
-            exit(1)
+            print("Wrong OS X version")
+            return 1
         }
     }
 
@@ -60,21 +60,28 @@ func main() {
         if #available(OSX 10.10, *) {
             contentsOfKeychain = getPasswd(userAccount: s)
         } else {
-            exit(1)
+            print("Wrong OS X version")
+            return 1
         }
 
         if let pass = contentsOfKeychain {
+            // Copy to clipboard
+            let pb = NSPasteboard.general()
+            pb.clearContents()
+            pb.setString(pass, forType:NSStringPboardType)
+
             print("SSID: \(s)")
             print("PASS: \(pass)")
-            exit(1)
+
+            return 0
         } else {
             print("No WiFi password found for \(s)")
-            exit(0)
+            return 1
         }
-    } else {
-        print("No wireless interface detected")
-        exit(0)
     }
+
+    print("No wireless interface detected")
+    return 1
 }
 
-main()
+exit(main())
