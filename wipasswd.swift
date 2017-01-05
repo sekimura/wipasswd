@@ -23,16 +23,25 @@ func getCurrentSsid() -> String? {
     return nil
 }
 
-func getPasswd(userAccount : String) -> String? {
+func getPasswd(userAccount: String) -> String? {
     let keychainQuery: NSMutableDictionary = NSMutableDictionary(
-        objects: [kSecClassGenericPasswordValue, kAirPortService, userAccount, kCFBooleanTrue, kSecMatchLimitOneValue],
-        forKeys: [kSecClassValue, kSecAttrServiceValue, kSecAttrAccountValue, kSecReturnDataValue, kSecMatchLimitValue])
+        objects: [kSecClassGenericPasswordValue,
+                  kAirPortService,
+                  userAccount,
+                  kCFBooleanTrue,
+                  kSecMatchLimitOneValue],
+        forKeys: [kSecClassValue,
+                  kSecAttrServiceValue,
+                  kSecAttrAccountValue,
+                  kSecReturnDataValue,
+                  kSecMatchLimitValue])
 
     var dataTypeRef: AnyObject?
     SecItemCopyMatching(keychainQuery, &dataTypeRef)
 
     if let retrievedData = dataTypeRef as? NSData {
-        if let string = NSString(data:retrievedData as Data, encoding:String.Encoding.utf8.rawValue) {
+        if let string = NSString(data:retrievedData as Data,
+                                 encoding:String.Encoding.utf8.rawValue) {
             return string as String
         }
     }
