@@ -1,4 +1,4 @@
-#!/usr/bin/env xcrun swift
+#!/usr/bin/env xcrun swift -target x86_64-apple-macosx10.10
 // vi: ft=swift
 
 import Security
@@ -29,16 +29,30 @@ func main() -> Int32 {
     let args = CommandLine.arguments
 
     var ssid: String?
+    var onlyPasswd = false
     if args.count > 1 {
-        ssid = args[1]
+        if args[1] == "-w" {
+            onlyPasswd = true
+        }
+    }
+    if args.count > 2 {
+        if onlyPasswd {
+            ssid = args[2]
+        } else {
+            ssid = args[1]
+        }
     } else {
         ssid = getCurrentSsid()
     }
 
     if let s = ssid {
         if let pass = getPasswd(ssid: s) {
-            print("SSID: \(s)")
-            print("PASS: \(pass)")
+            if onlyPasswd {
+                print(pass)
+            } else {
+                print("SSID: \(s)")
+                print("PASS: \(pass)")
+            }
             return 0
         } else {
             print("No WiFi password found for \(s)")
