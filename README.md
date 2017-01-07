@@ -26,11 +26,33 @@ And you'll see a prompt to use "System" keychain. Enter your Username and Passwo
 
 ## Install
 
+First, clone this repo
 ```
 $ git clone https://github.com/sekimura/wipasswd.git
 $ cd wipasswod
-$ make
 ```
+
+To build binary, run make to build wipasswd binary
+
+```
+$ make
+$ ./wipasswd
+```
+
+You can also use wipasswd.swift as a script file
+
+```
+$ chmod 755 ./wipasswd.swift
+$ ./wipasswd.swift
+```
+
+If you don't have Xcode, you can still do th same with bash script.
+
+```
+$ ./wipasswd.bash
+```
+
+Enjoy!
 
 ## License
 
