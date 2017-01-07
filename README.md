@@ -26,20 +26,13 @@ And you'll see a prompt to use "System" keychain. Enter your Username and Passwo
 
 ## Install
 
-Method 1: Install from my tap repo
-
 ```
-$ brew install https://raw.github.com/sekimura/homebrew-tap/master/wipasswd.rb
-```
-
-Method 2: Use [brew tap](https://github.com/Homebrew/homebrew/blob/master/share/doc/homebrew/brew-tap.md)
-
-```
-$ brew tap sekimura/tap
-$ brew install sekimura/tap/wipasswd
+$ git clone https://github.com/sekimura/wipasswd.git
+$ cd wipasswod
+$ make
 ```
 
 ## License
 
-MIT © [Masayoshi Sekimura](http://sekimura.org)
+MIT © [Masayoshi Sekimura](https://www.sekimura.org)
 
