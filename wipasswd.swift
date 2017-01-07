@@ -5,44 +5,28 @@ import Security
 import Foundation
 import CoreWLAN
 
-// Arguments for the keychain queries
-let kSecClassValue = kSecClass as NSString
-let kSecAttrServiceValue = kSecAttrService as NSString
-let kSecAttrAccountValue = kSecAttrAccount as NSString
-let kSecClassGenericPasswordValue = kSecClassGenericPassword as NSString
-let kSecMatchLimitValue = kSecMatchLimit as NSString
-let kSecReturnDataValue = kSecReturnData as NSString
-let kSecMatchLimitOneValue = kSecMatchLimitOne as NSString
-let kAirPortService = "AirPort"
-
 func getCurrentSsid() -> String? {
-    return CWWiFiClient.sharedWiFiClient().interface().ssid()
+    return CWWiFiClient.shared().interface()?.ssid()
 }
 
-func getPasswd(userAccount : String) -> String? {
-    var keychainQuery: NSMutableDictionary = NSMutableDictionary(
-        objects: [kSecClassGenericPasswordValue, kAirPortService, userAccount, kCFBooleanTrue, kSecMatchLimitOneValue],
-        forKeys: [kSecClassValue, kSecAttrServiceValue, kSecAttrAccountValue, kSecReturnDataValue, kSecMatchLimitValue])
-
-    var dataTypeRef: Unmanaged<AnyObject>?
-
-    let status: OSStatus = SecItemCopyMatching(keychainQuery, &dataTypeRef)
-
-    let opaque = dataTypeRef?.toOpaque()
-    if let op = opaque {
-        let retrievedData = Unmanaged<NSData>.fromOpaque(op).takeUnretainedValue()
-        if let string = NSString(data:retrievedData, encoding:NSUTF8StringEncoding) {
-            return string as String
-        } else {
-            return nil
-        }
-    } else {
-        return nil
+func getPasswd(ssid: String) -> String? {
+    let query: [NSString: Any] = [
+        kSecClass: kSecClassGenericPassword,
+        kSecAttrService: "AirPort",
+        kSecAttrAccount: ssid,
+        kSecReturnData: true,
+        kSecMatchLimit: kSecMatchLimitOne
+    ]
+    var result: AnyObject?
+    let status = SecItemCopyMatching(query as CFDictionary, &result)
+    if status == noErr, let data = result as? Data {
+        return NSString(data: data, encoding: String.Encoding.utf8.rawValue) as? String
     }
+    return nil
 }
 
-func main() {
-    let args = [String](Process.arguments)
+func main() -> Int32 {
+    let args = CommandLine.arguments
 
     var ssid: String?
     if args.count > 1 {
@@ -52,19 +36,16 @@ func main() {
     }
 
     if let s = ssid {
-        let contentsOfKeychain = getPasswd(s)
-        if let pass = contentsOfKeychain {
-            println("SSID: \(s)")
-            println("PASS: \(pass)")
-            exit(1)
+        if let pass = getPasswd(ssid: s) {
+            print("SSID: \(s)")
+            print("PASS: \(pass)")
+            return 0
         } else {
-            println("No WiFi password found for \(s)")
-            exit(0)
+            print("No WiFi password found for \(s)")
+            return 1
         }
-    } else {
-        println("No wireless interface detected")
-        exit(0)
     }
+    return 0
 }
 
-main()
+exit(main())
