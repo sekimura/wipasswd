@@ -49,7 +49,7 @@ $ ./wipasswd.swift
 If you don't have Xcode, you can still do th same with bash script.
 
 ```
-$ ./wipasswd.bash
+$ ./wipasswd.sh
 ```
 
 Enjoy!
