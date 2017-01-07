@@ -20,7 +20,7 @@ func getPasswd(ssid: String) -> String? {
     var result: AnyObject?
     let status = SecItemCopyMatching(query as CFDictionary, &result)
     if status == noErr, let data = result as? Data {
-        return NSString(data: data, encoding: String.Encoding.utf8.rawValue) as? String
+        return String(data: data, encoding: .utf8)
     }
     return nil
 }
